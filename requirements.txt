@@ -1,0 +1,9 @@
+duckdb
+pandas>=2.2,<3
+numpy
+pyarrow
+pyyaml
+pytest
+streamlit
+altair
+boto3

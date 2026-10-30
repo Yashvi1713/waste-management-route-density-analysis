@@ -1,0 +1,235 @@
+version: 1
+type_families: [text, integer, float, date, timestamp, boolean]
+layers:
+  bronze:
+    guarantee: Immutable, replayable CSV source values, including malformed records.
+  silver:
+    guarantee: Typed, deduplicated, contract-valid records plus rejects and load audit.
+  gold:
+    guarantee: Conformed dimensions, natural-grain facts, and additive analytical marts.
+
+tables:
+  silver.trucks:
+    path: data/silver/trucks.parquet
+    description: Validated truck master.
+    minimum_row_count: 1
+    columns:
+      truck_id: {type: text, nullable: false, unique: true}
+      depot: {type: text, nullable: false, accepted_values: [Vaughan, Brampton, Mississauga]}
+      fuel_type: {type: text, nullable: false, accepted_values: [CNG, diesel]}
+      model_year: {type: integer, nullable: false, minimum: 2014, maximum: 2024}
+      body_type: {type: text, nullable: false, accepted_values: [front_load, side_load]}
+
+  silver.routes:
+    path: data/silver/routes.parquet
+    description: Validated route master.
+    minimum_row_count: 1
+    columns:
+      route_id: {type: text, nullable: false, unique: true}
+      depot: {type: text, nullable: false, accepted_values: [Vaughan, Brampton, Mississauga]}
+      service_line: {type: text, nullable: false, accepted_values: [residential, commercial]}
+      planned_stops: {type: integer, nullable: false, minimum: 1}
+
+  silver.customers:
+    path: data/silver/customers.parquet
+    description: Validated customer master with weekday service assignment.
+    minimum_row_count: 1
+    columns:
+      customer_id: {type: text, nullable: false, unique: true}
+      route_id: {type: text, nullable: false, foreign_key: silver.routes.route_id}
+      segment: {type: text, nullable: false, accepted_values: [residential, industrial, small_business]}
+      service_day: {type: text, nullable: false, accepted_values: [Monday, Tuesday, Wednesday, Thursday, Friday]}
+      monthly_rate: {type: float, nullable: false, minimum: 0}
+
+  silver.pickups:
+    path: data/silver/pickups.parquet
+    description: Validated stop attempts, one row per pickup ID.
+    minimum_row_count: 1
+    columns:
+      pickup_id: {type: text, nullable: false, unique: true}
+      service_date: {type: date, nullable: false}
+      route_id: {type: text, nullable: false, foreign_key: silver.routes.route_id}
+      truck_id: {type: text, nullable: false, foreign_key: silver.trucks.truck_id}
+      customer_id: {type: text, nullable: false, foreign_key: silver.customers.customer_id}
+      completed_at: {type: timestamp, nullable: true}
+      tons: {type: float, nullable: true, minimum: 0, maximum: 12}
+      status: {type: text, nullable: false, accepted_values: [completed, missed]}
+
+  silver.route_days:
+    path: data/silver/route_days.parquet
+    description: Validated route operating costs at service-date, route, and truck grain.
+    minimum_row_count: 1
+    compound_unique_key: [service_date, route_id, truck_id]
+    columns:
+      service_date: {type: date, nullable: false}
+      route_id: {type: text, nullable: false, foreign_key: silver.routes.route_id}
+      truck_id: {type: text, nullable: false, foreign_key: silver.trucks.truck_id}
+      shift_hours: {type: float, nullable: false, minimum_exclusive: 0}
+      km_driven: {type: float, nullable: false, minimum_exclusive: 0}
+      labour_cost: {type: float, nullable: false, minimum: 0}
+      fuel_cost: {type: float, nullable: false, minimum: 0}
+      maint_cost: {type: float, nullable: false, minimum: 0}
+
+  silver.rejects:
+    path: data/silver/rejects.parquet
+    description: Original rejected Bronze records and their first failed rule.
+    columns:
+      source: {type: text, nullable: false, accepted_values: [pickups, route_days]}
+      rule: {type: text, nullable: false, accepted_values: [bad_status, unknown_truck, tons_out_of_range, outside_shift, nonpositive_measure]}
+      record: {type: text, nullable: false}
+      loaded_at: {type: timestamp, nullable: false}
+
+  silver.load_audit:
+    path: data/silver/load_audit.parquet
+    description: Per-source accounting proving no Bronze row disappears silently.
+    minimum_row_count: 5
+    columns:
+      source: {type: text, nullable: false, unique: true, accepted_values: [trucks, routes, customers, pickups, route_days]}
+      raw_rows: {type: integer, nullable: false, minimum: 0}
+      duplicates_removed: {type: integer, nullable: false, minimum: 0}
+      rejected_rows: {type: integer, nullable: false, minimum: 0}
+      silver_rows: {type: integer, nullable: false, minimum: 0}
+      loaded_at: {type: timestamp, nullable: false}
+
+  gold.dim_truck:
+    path: data/gold/dim_truck.parquet
+    description: Conformed truck dimension.
+    minimum_row_count: 1
+    columns:
+      truck_id: {type: text, nullable: false, unique: true}
+      depot: {type: text, nullable: false, accepted_values: [Vaughan, Brampton, Mississauga]}
+      fuel_type: {type: text, nullable: false, accepted_values: [CNG, diesel]}
+      model_year: {type: integer, nullable: false, minimum: 2014, maximum: 2024}
+      body_type: {type: text, nullable: false, accepted_values: [front_load, side_load]}
+
+  gold.dim_route:
+    path: data/gold/dim_route.parquet
+    description: Conformed route dimension.
+    minimum_row_count: 1
+    columns:
+      route_id: {type: text, nullable: false, unique: true}
+      depot: {type: text, nullable: false, accepted_values: [Vaughan, Brampton, Mississauga]}
+      service_line: {type: text, nullable: false, accepted_values: [residential, commercial]}
+      planned_stops: {type: integer, nullable: false, minimum: 1}
+
+  gold.dim_customer:
+    path: data/gold/dim_customer.parquet
+    description: Conformed customer dimension.
+    minimum_row_count: 1
+    columns:
+      customer_id: {type: text, nullable: false, unique: true}
+      route_id: {type: text, nullable: false, foreign_key: gold.dim_route.route_id}
+      segment: {type: text, nullable: false, accepted_values: [residential, industrial, small_business]}
+      service_day: {type: text, nullable: false, accepted_values: [Monday, Tuesday, Wednesday, Thursday, Friday]}
+      monthly_rate: {type: float, nullable: false, minimum: 0}
+
+  gold.dim_date:
+    path: data/gold/dim_date.parquet
+    description: Every calendar date from minimum through maximum source service date.
+    minimum_row_count: 1
+    columns:
+      service_date: {type: date, nullable: false, unique: true}
+      day_of_week: {type: text, nullable: false, accepted_values: [Monday, Tuesday, Wednesday, Thursday, Friday, Saturday, Sunday]}
+      iso_week: {type: integer, nullable: false, minimum: 1, maximum: 53}
+      month: {type: integer, nullable: false, minimum: 1, maximum: 12}
+      is_weekend: {type: boolean, nullable: false}
+
+  gold.fact_pickup:
+    path: data/gold/fact_pickup.parquet
+    description: One row per validated stop attempt.
+    minimum_row_count: 1
+    columns:
+      pickup_id: {type: text, nullable: false, unique: true}
+      service_date: {type: date, nullable: false, foreign_key: gold.dim_date.service_date}
+      route_id: {type: text, nullable: false, foreign_key: gold.dim_route.route_id}
+      truck_id: {type: text, nullable: false, foreign_key: gold.dim_truck.truck_id}
+      customer_id: {type: text, nullable: false, foreign_key: gold.dim_customer.customer_id}
+      completed_at: {type: timestamp, nullable: true}
+      tons: {type: float, nullable: true, minimum: 0, maximum: 12}
+      is_completed: {type: boolean, nullable: false}
+      is_missed: {type: boolean, nullable: false}
+
+  gold.fact_route_day:
+    path: data/gold/fact_route_day.parquet
+    description: Route operating measures at natural service-date, route, and truck grain.
+    minimum_row_count: 1
+    compound_unique_key: [service_date, route_id, truck_id]
+    columns:
+      service_date: {type: date, nullable: false, foreign_key: gold.dim_date.service_date}
+      route_id: {type: text, nullable: false, foreign_key: gold.dim_route.route_id}
+      truck_id: {type: text, nullable: false, foreign_key: gold.dim_truck.truck_id}
+      shift_hours: {type: float, nullable: false, minimum_exclusive: 0}
+      km_driven: {type: float, nullable: false, minimum_exclusive: 0}
+      labour_cost: {type: float, nullable: false, minimum: 0}
+      fuel_cost: {type: float, nullable: false, minimum: 0}
+      maint_cost: {type: float, nullable: false, minimum: 0}
+      total_cost: {type: float, nullable: false, minimum: 0}
+
+  gold.mart_route_day:
+    path: data/gold/mart_route_day.parquet
+    description: Additive pickup and cost measures at route-day-truck grain; contains no ratios.
+    minimum_row_count: 1
+    compound_unique_key: [service_date, route_id, truck_id]
+    columns:
+      service_date: {type: date, nullable: false, foreign_key: gold.dim_date.service_date}
+      route_id: {type: text, nullable: false, foreign_key: gold.dim_route.route_id}
+      truck_id: {type: text, nullable: false, foreign_key: gold.dim_truck.truck_id}
+      depot: {type: text, nullable: false, accepted_values: [Vaughan, Brampton, Mississauga]}
+      service_line: {type: text, nullable: false, accepted_values: [residential, commercial]}
+      fuel_type: {type: text, nullable: false, accepted_values: [CNG, diesel]}
+      completed_stops: {type: integer, nullable: false, minimum: 0}
+      missed_stops: {type: integer, nullable: false, minimum: 0}
+      tons: {type: float, nullable: false, minimum: 0}
+      shift_hours: {type: float, nullable: false, minimum_exclusive: 0}
+      km_driven: {type: float, nullable: false, minimum_exclusive: 0}
+      labour_cost: {type: float, nullable: false, minimum: 0}
+      fuel_cost: {type: float, nullable: false, minimum: 0}
+      maint_cost: {type: float, nullable: false, minimum: 0}
+      total_cost: {type: float, nullable: false, minimum: 0}
+
+  gold.mart_rejects_summary:
+    path: data/gold/mart_rejects_summary.parquet
+    description: Reject counts by source and first failed rule.
+    compound_unique_key: [source, rule]
+    columns:
+      source: {type: text, nullable: false, accepted_values: [pickups, route_days]}
+      rule: {type: text, nullable: false, accepted_values: [bad_status, unknown_truck, tons_out_of_range, outside_shift, nonpositive_measure]}
+      rejected_rows: {type: integer, nullable: false, minimum: 1}
+
+  gold.mart_route_kpis:
+    path: data/gold/mart_route_kpis.parquet
+    description: Materialized route KPIs calculated by kpis.py from additive route-day measures.
+    minimum_row_count: 1
+    columns:
+      route_id: {type: text, nullable: false, unique: true, foreign_key: gold.dim_route.route_id}
+      depot: {type: text, nullable: false, accepted_values: [Vaughan, Brampton, Mississauga]}
+      service_line: {type: text, nullable: false, accepted_values: [residential, commercial]}
+      completed_stops: {type: integer, nullable: false, minimum: 0}
+      missed_stops: {type: integer, nullable: false, minimum: 0}
+      tons: {type: float, nullable: false, minimum: 0}
+      shift_hours: {type: float, nullable: false, minimum_exclusive: 0}
+      total_cost: {type: float, nullable: false, minimum: 0}
+      service_days_in_data: {type: integer, nullable: false, minimum: 1}
+      stops_per_hour: {type: float, nullable: false, minimum: 0}
+      tons_per_hour: {type: float, nullable: false, minimum: 0}
+      missed_rate: {type: float, nullable: false, minimum: 0, maximum: 1}
+      cost_per_stop: {type: float, nullable: false, minimum: 0}
+      median_cost_per_stop: {type: float, nullable: false, minimum: 0}
+      annual_savings: {type: float, nullable: false, minimum: 0}
+      low_density: {type: boolean, nullable: false}
+      high_cost: {type: boolean, nullable: false}
+      is_flagged: {type: boolean, nullable: false}
+      flag_reason: {type: text, nullable: false, accepted_values: ['', low_density, high_cost, low_density+high_cost]}
+
+  gold.mart_fuel_kpis:
+    path: data/gold/mart_fuel_kpis.parquet
+    description: Materialized fuel KPIs by fuel type, calculated by kpis.py.
+    minimum_row_count: 1
+    columns:
+      fuel_type: {type: text, nullable: false, unique: true, accepted_values: [CNG, diesel]}
+      fuel_cost: {type: float, nullable: false, minimum: 0}
+      maint_cost: {type: float, nullable: false, minimum: 0}
+      km_driven: {type: float, nullable: false, minimum_exclusive: 0}
+      fuel_cost_per_km: {type: float, nullable: false, minimum: 0}
+      maint_cost_per_km: {type: float, nullable: false, minimum: 0}
+      vehicle_cost_per_km: {type: float, nullable: false, minimum: 0}

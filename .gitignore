@@ -1,0 +1,38 @@
+# Python environments and caches
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Local configuration and credentials
+.env
+.env.*
+!.env.example
+.aws/
+*.pem
+*.key
+
+# Generated synthetic datasets and reports
+data/
+qa_report.md
+
+# Terraform working files and sensitive/local state
+infra/.terraform/
+infra/*.tfstate
+infra/*.tfstate.*
+infra/*.tfplan
+infra/crash.log
+infra/crash.*.log
+infra/*.tfvars
+!infra/*.tfvars.example
+
+# Editors and operating systems
+.DS_Store
+.idea/
+.vscode/
+
+# Keep the published architecture source, but never its nested Git metadata
+sites/**/.git/
