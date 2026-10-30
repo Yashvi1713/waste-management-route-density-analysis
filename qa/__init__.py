@@ -1,0 +1,2 @@
+"""Deterministic project quality assurance."""
+
