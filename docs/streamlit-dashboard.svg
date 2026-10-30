@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900" role="img" aria-labelledby="title desc">
+  <title id="title">Route Density Lab Streamlit dashboard</title>
+  <desc id="desc">Synthetic overview dashboard with six KPIs and a completed versus missed pickup donut chart.</desc>
+  <defs><filter id="shadow" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="0" dy="8" stdDeviation="16" flood-color="#172033" flood-opacity=".10"/></filter></defs>
+  <rect width="1600" height="900" fill="#f7f8fb"/><rect width="250" height="900" fill="#fff"/><rect x="249" width="1" height="900" fill="#e5e7eb"/>
+  <text x="38" y="62" font-family="Arial, sans-serif" font-size="23" font-weight="700" fill="#151b2b">Filters</text>
+  <g font-family="Arial, sans-serif" fill="#303849">
+    <text x="38" y="116" font-size="13" font-weight="700">Depot</text><rect x="38" y="130" width="174" height="42" rx="7" fill="#f5f6f8" stroke="#d9dde5"/><text x="53" y="156" font-size="13">All</text>
+    <text x="38" y="214" font-size="13" font-weight="700">Service line</text><rect x="38" y="228" width="174" height="42" rx="7" fill="#f5f6f8" stroke="#d9dde5"/><text x="53" y="254" font-size="13">All</text>
+    <text x="38" y="312" font-size="13" font-weight="700">Fuel type</text><rect x="38" y="326" width="174" height="42" rx="7" fill="#f5f6f8" stroke="#d9dde5"/><text x="53" y="352" font-size="13">All</text>
+    <text x="38" y="410" font-size="13" font-weight="700">Date range</text><rect x="38" y="424" width="174" height="64" rx="7" fill="#f5f6f8" stroke="#d9dde5"/><text x="53" y="449" font-size="11">2026-01-01</text><text x="53" y="473" font-size="11">2026-03-31</text>
+  </g>
+  <text x="300" y="70" font-family="Arial, sans-serif" font-size="44" font-weight="750" fill="#242938">Route Density Lab</text>
+  <rect x="300" y="96" width="1250" height="54" rx="8" fill="#fff9dc" stroke="#f0e5a5"/><text x="326" y="130" font-family="Arial, sans-serif" font-size="16" font-weight="650" fill="#8b6900">Synthetic data</text>
+  <text x="300" y="178" font-family="Arial, sans-serif" font-size="14" fill="#687083">Analytics backend: athena</text>
+  <g font-family="Arial, sans-serif" font-size="16" font-weight="650" fill="#485064"><text x="300" y="226" fill="#ff4b4b">Overview</text><text x="420" y="226">Routes</text><text x="505" y="226">Fleet</text><text x="570" y="226">Data quality</text></g>
+  <rect x="300" y="243" width="1250" height="1" fill="#dfe2e8"/><rect x="300" y="241" width="79" height="3" rx="2" fill="#ff4b4b"/>
+  <g font-family="Arial, sans-serif" filter="url(#shadow)">
+    <g><rect x="300" y="282" width="190" height="124" rx="10" fill="#fff"/><text x="320" y="316" font-size="13" fill="#697184">Cost per stop</text><text x="320" y="370" font-size="34" font-weight="700" fill="#232938">$0.95</text></g>
+    <g><rect x="505" y="282" width="190" height="124" rx="10" fill="#fff"/><text x="525" y="316" font-size="13" fill="#697184">Stops per hour</text><text x="525" y="370" font-size="34" font-weight="700" fill="#232938">62.4</text></g>
+    <g><rect x="710" y="282" width="190" height="124" rx="10" fill="#fff"/><text x="730" y="316" font-size="13" fill="#697184">Missed-pickup rate</text><text x="730" y="370" font-size="34" font-weight="700" fill="#232938">1.92%</text></g>
+    <g><rect x="915" y="282" width="190" height="124" rx="10" fill="#fff"/><text x="935" y="316" font-size="13" fill="#697184">Total pickups</text><text x="935" y="370" font-size="30" font-weight="700" fill="#232938">1,559,380</text></g>
+    <g><rect x="1120" y="282" width="190" height="124" rx="10" fill="#fff"/><text x="1140" y="316" font-size="13" fill="#697184">Flagged routes</text><text x="1140" y="370" font-size="34" font-weight="700" fill="#232938">5</text></g>
+    <g><rect x="1325" y="282" width="225" height="124" rx="10" fill="#fff"/><text x="1345" y="316" font-size="13" fill="#697184">Annual savings</text><text x="1345" y="370" font-size="31" font-weight="700" fill="#232938">$288,448</text></g>
+  </g>
+  <rect x="300" y="435" width="1250" height="68" rx="8" fill="#eaf4ff" stroke="#cfe3f8"/><text x="326" y="476" font-family="Arial, sans-serif" font-size="15" fill="#315d84">Bringing 5 flagged routes to their service-line median saves about $288,448 a year — synthetic upper-bound estimate.</text>
+  <rect x="300" y="530" width="1250" height="310" rx="12" fill="#fff" filter="url(#shadow)"/><text x="330" y="574" font-family="Arial, sans-serif" font-size="20" font-weight="700" fill="#242938">Pickup attempts by status</text>
+  <circle cx="660" cy="700" r="96" fill="none" stroke="#edf0f4" stroke-width="45"/><circle cx="660" cy="700" r="96" fill="none" stroke="#2ca02c" stroke-width="45" stroke-dasharray="592 12" transform="rotate(-90 660 700)"/><circle cx="660" cy="700" r="96" fill="none" stroke="#d62728" stroke-width="45" stroke-dasharray="12 592" stroke-dashoffset="-592" transform="rotate(-90 660 700)"/>
+  <text x="660" y="694" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" fill="#697184">TOTAL</text><text x="660" y="724" text-anchor="middle" font-family="Arial, sans-serif" font-size="22" font-weight="700" fill="#242938">1.56M</text>
+  <circle cx="930" cy="660" r="7" fill="#2ca02c"/><text x="950" y="666" font-family="Arial, sans-serif" font-size="15" fill="#343b4b">Completed</text><text x="1135" y="666" text-anchor="end" font-family="Arial, sans-serif" font-size="15" font-weight="700" fill="#242938">1,529,488</text>
+  <circle cx="930" cy="710" r="7" fill="#d62728"/><text x="950" y="716" font-family="Arial, sans-serif" font-size="15" fill="#343b4b">Missed</text><text x="1135" y="716" text-anchor="end" font-family="Arial, sans-serif" font-size="15" font-weight="700" fill="#242938">29,892</text>
+  <rect x="930" y="757" width="205" height="1" fill="#e5e7eb"/><text x="930" y="791" font-family="Arial, sans-serif" font-size="13" fill="#697184">Missed pickup rate</text><text x="1135" y="791" text-anchor="end" font-family="Arial, sans-serif" font-size="16" font-weight="700" fill="#242938">1.92%</text>
+  <text x="300" y="875" font-family="Arial, sans-serif" font-size="12" fill="#8a91a1">All values shown are synthetic.</text>
+</svg>

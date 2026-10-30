@@ -35,6 +35,7 @@
 - AC-E9: Deployment uploads Bronze, executes both Glue jobs sequentially, runs AWS QA, and does not automatically destroy resources. `tests/test_aws_medallion.py::test_deploy_runs_ordered_jobs_and_never_destroys`
 - AC-E10: An unscheduled Glue Workflow connects both jobs through a success-only condition and its start trigger is disabled at rest. `tests/test_aws_medallion.py::test_glue_workflow_visualises_job_dependency_without_schedule`
 - AC-E11: Overview shows a Total pickups KPI and completed-versus-missed donut chart. `tests/test_app.py::test_overview_has_pickup_total_and_status_donut`
+- AC-E12: README documents the AWS-only production architecture, dimensional model, data-quality controls, and embeds the synthetic Streamlit dashboard image. `tests/test_readme.py::test_readme_documents_aws_architecture`
 
 ## Deterministic QA assertions
 
