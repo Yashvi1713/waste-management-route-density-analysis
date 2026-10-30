@@ -1,0 +1,309 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="An interactive walkthrough of the Route Density Lab AWS medallion architecture.">
+  <title>Route Density Lab — AWS Architecture</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="grain" aria-hidden="true"></div>
+  <header class="site-header">
+    <a class="brand" href="#top" aria-label="Route Density Lab home">
+      <span class="brand-mark">RD</span>
+      <span>Route Density Lab</span>
+    </a>
+    <nav aria-label="Main navigation">
+      <a href="#architecture">Architecture</a>
+      <a href="#workflow">Workflow</a>
+      <a href="#model">Data model</a>
+      <a href="#quality">Quality</a>
+      <a href="#serving">Serving</a>
+    </nav>
+    <span class="status"><i></i> AWS deployed</span>
+  </header>
+
+  <main id="top">
+    <section class="hero section-shell">
+      <div class="hero-copy reveal">
+        <p class="eyebrow">AWS MEDALLION ARCHITECTURE · SYNTHETIC DATA</p>
+        <h1>From raw route events<br>to <em>operational clarity.</em></h1>
+        <p class="hero-lede">A production-shaped data platform that turns immutable collection events into trusted route economics—without losing a single source record.</p>
+        <div class="hero-actions">
+          <a class="primary-button" href="#architecture">Explore the architecture <span>↓</span></a>
+          <a class="text-link" href="#quality">See the quality contract →</a>
+        </div>
+      </div>
+      <div class="hero-panel reveal delay-1" aria-label="Project deployment summary">
+        <div class="terminal-top"><span></span><span></span><span></span><b>route-lab / eu-west-1</b></div>
+        <div class="terminal-body">
+          <p><span class="prompt">$</span> terraform apply</p>
+          <p class="success">✓ 33 resources added</p>
+          <p><span class="prompt">$</span> glue run medallion</p>
+          <p class="success">✓ bronze → silver → gold</p>
+          <p><span class="prompt">$</span> athena qa</p>
+          <p class="success">✓ 4 / 4 checks passed</p>
+          <div class="terminal-rule"></div>
+          <div class="terminal-stats">
+            <div><strong>64</strong><span>service days</span></div>
+            <div><strong>2,550</strong><span>route-day rows</span></div>
+            <div><strong>17</strong><span>catalog tables</span></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="proof-strip" aria-label="Architecture principles">
+      <span>Immutable inputs</span><i></i><span>Explicit contracts</span><i></i><span>Natural-grain facts</span><i></i><span>Sum-over-sum KPIs</span><i></i><span>Serverless analytics</span>
+    </section>
+
+    <section id="architecture" class="deep-architecture">
+      <div class="section-shell">
+        <div class="section-intro light reveal">
+          <p class="section-number">01 / ARCHITECTURE</p>
+          <h2>Bronze, Silver and Gold on S3—transformed by two Glue jobs.</h2>
+          <p>Click any component, or use the guided walkthrough to follow a record from synthetic source to an operational decision.</p>
+        </div>
+
+        <div class="arch-explorer reveal">
+          <div class="explorer-toolbar">
+            <div class="tour-controls">
+              <button id="tour-start" class="tour-primary">Walk through</button>
+              <button id="tour-prev" aria-label="Previous architecture step">← Prev</button>
+              <button id="tour-next" aria-label="Next architecture step">Next →</button>
+              <span id="tour-count">Select a component</span>
+            </div>
+            <div class="arch-legend" aria-label="Architecture categories">
+              <span><i class="storage-dot"></i>Storage</span><span><i class="compute-dot"></i>Compute</span><span><i class="query-dot"></i>Catalog & query</span><span><i class="serve-dot"></i>Serving</span>
+            </div>
+          </div>
+
+          <div class="aws-boundary">
+            <div class="boundary-label"><strong>AWS · eu-west-1</strong><span>provisioned by Terraform</span></div>
+            <button class="arch-node workflow-node compute" data-arch="workflow"><small>ORCHESTRATION</small><strong>Glue Workflow</strong><span>disabled start → Job 1 → Job 2</span></button>
+            <div class="primary-flow">
+              <button class="arch-node source" data-arch="source"><small>LOCAL SOURCE</small><strong>Raw synthetic data</strong><span>generator · CSV · manifest</span><code>64 service days</code></button>
+              <span class="line-label">sync</span><b class="connector">→</b>
+              <button class="arch-node storage" data-arch="bronze"><small>S3 PREFIX</small><strong>Bronze</strong><span>immutable CSV as received</span><code>130 MB · 132 objects</code></button>
+              <span class="line-label">read</span><b class="connector">→</b>
+              <button class="arch-node compute" data-arch="job1"><small>GLUE 4.0 · PYSPARK</small><strong>Bronze → Silver</strong><span>dedupe · type · 5 rules</span><code>G.1X × 2 workers</code></button>
+              <span class="line-label">write</span><b class="connector">→</b>
+              <button class="arch-node storage" data-arch="silver"><small>S3 PREFIX</small><strong>Silver</strong><span>valid + rejects + audit</span><code>7 datasets</code></button>
+              <span class="line-label">read</span><b class="connector">→</b>
+              <button class="arch-node compute" data-arch="job2"><small>GLUE 4.0 · PYSPARK</small><strong>Silver → Gold</strong><span>dimensions · facts · marts</span><code>natural grains</code></button>
+              <span class="line-label">write</span><b class="connector">→</b>
+              <button class="arch-node storage" data-arch="gold"><small>S3 PREFIX</small><strong>Gold</strong><span>analytical Parquet</span><code>10 datasets</code></button>
+            </div>
+            <div class="serving-flow">
+              <button class="arch-node serve" data-arch="decision"><small>BUSINESS</small><strong>Ops & Finance</strong><span>route action and savings case</span><code>decision</code></button>
+              <b class="connector reverse">←</b><span class="line-label">answer</span>
+              <button class="arch-node serve" data-arch="streamlit"><small>LOCAL APPLICATION</small><strong>Streamlit</strong><span>filters · KPIs · charts</span><code>localhost:8503</code></button>
+              <b class="connector reverse">←</b><span class="line-label">SQL</span>
+              <button class="arch-node query" data-arch="athena"><small>SERVERLESS QUERY</small><strong>Athena</strong><span>SQL over Gold Parquet</span><code>4 / 4 AWS QA</code></button>
+              <b class="connector reverse">←</b><span class="line-label">schema</span>
+              <button class="arch-node query" data-arch="catalog"><small>METADATA</small><strong>Glue Catalog</strong><span>explicit schemas · no crawler</span><code>17 tables</code></button>
+            </div>
+          </div>
+
+          <aside id="arch-inspector" class="arch-inspector" aria-live="polite">
+            <div><p id="arch-kicker">SYSTEM OVERVIEW</p><h3 id="arch-title">Select a component to inspect it.</h3></div>
+            <p id="arch-body">Each node explains what enters, what leaves, the trust guarantee it adds, and why the boundary exists.</p>
+            <dl><div><dt>INPUT</dt><dd id="arch-input">—</dd></div><div><dt>OUTPUT</dt><dd id="arch-output">—</dd></div><div><dt>GUARANTEE</dt><dd id="arch-guarantee">—</dd></div></dl>
+          </aside>
+        </div>
+      </div>
+    </section>
+
+    <section id="workflow" class="workflow-section">
+      <div class="section-shell">
+        <div class="section-intro light reveal">
+          <p class="section-number">02 / WORKFLOW</p>
+          <h2>Every handoff is explicit.</h2>
+          <p>Two independent Glue jobs move data forward. The second cannot run until the first succeeds; a disabled workflow visualizes the same dependency.</p>
+        </div>
+        <div class="workflow-grid">
+          <article class="workflow-step reveal">
+            <span class="step-no">01</span><div class="step-symbol upload-symbol">↑</div>
+            <p class="step-kicker">INGEST</p><h3>Upload Bronze</h3>
+            <p>Deterministic CSV extracts and the error manifest land in the immutable Bronze prefix.</p>
+            <code>aws s3 sync data/bronze/</code>
+          </article>
+          <article class="workflow-step reveal delay-1">
+            <span class="step-no">02</span><div class="step-symbol spark-symbol">✦</div>
+            <p class="step-kicker">GLUE JOB 1</p><h3>Validate to Silver</h3>
+            <p>Read as text, deduplicate, type, apply ordered rules, quarantine rejects, and reconcile every source.</p>
+            <code>route-lab-bronze-to-silver</code>
+          </article>
+          <article class="workflow-step reveal delay-2">
+            <span class="step-no">03</span><div class="step-symbol model-symbol">◇</div>
+            <p class="step-kicker">GLUE JOB 2</p><h3>Model to Gold</h3>
+            <p>Build conformed dimensions, natural-grain facts, additive marts, and materialized route/fuel KPIs.</p>
+            <code>route-lab-silver-to-gold</code>
+          </article>
+          <article class="workflow-step reveal delay-3">
+            <span class="step-no">04</span><div class="step-symbol query-symbol">⌕</div>
+            <p class="step-kicker">ATHENA QA</p><h3>Query & verify</h3>
+            <p>Check reconciliation, fact uniqueness, route-day grain, and a non-empty analytical mart.</p>
+            <code>4 / 4 checks passed</code>
+          </article>
+        </div>
+        <div class="workflow-note reveal"><span>Success-only orchestration</span><p>Bronze-to-Silver <b>SUCCEEDED</b> → Silver-to-Gold starts. Any failure stops the deployment immediately.</p></div>
+      </div>
+    </section>
+
+    <section id="model" class="deep-model">
+      <div class="section-shell">
+        <div class="section-intro light reveal">
+          <p class="section-number">03 / DATA MODEL</p>
+          <h2>Two business processes. One safe point to join.</h2>
+          <p>Read the model from left to right: dimensions describe the business, facts record events at their natural grain, and marts combine them only after pickup activity reaches route-day grain.</p>
+        </div>
+
+        <div class="model-key reveal">
+          <span><i class="key-pk">PK</i> primary key</span><span><i class="key-fk">FK</i> foreign key</span><span><i class="key-measure">Σ</i> additive measure</span><span><i class="key-ratio">÷</i> calculated ratio</span><span><i class="key-join">1—*</i> dimensional relationship</span>
+        </div>
+
+        <div class="clear-model reveal" aria-label="Data model from dimensions through facts to marts">
+          <svg class="model-relationships" aria-hidden="true" data-cardinality="one-to-many dimensional joins and grain-safe fact-to-mart joins">
+            <defs><marker id="model-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z"></path></marker></defs>
+            <g id="relationship-lines"></g>
+          </svg>
+          <div class="clear-stage dimension-stage">
+            <div class="stage-heading"><b>1</b><span><strong>Describe</strong><small>Conformed dimensions</small></span></div>
+            <button class="clear-table dimension-table" data-model="customer"><strong>dim_customer</strong><span><i class="key-pk">PK</i> customer_id</span><span><i class="key-fk">FK</i> route_id</span><small>segment · service_day · monthly_rate</small></button>
+            <button class="clear-table dimension-table" data-model="route"><strong>dim_route</strong><span><i class="key-pk">PK</i> route_id</span><small>depot · service_line · planned_stops</small></button>
+            <button class="clear-table dimension-table" data-model="truck"><strong>dim_truck</strong><span><i class="key-pk">PK</i> truck_id</span><small>fuel_type · model_year · body_type</small></button>
+            <button class="clear-table dimension-table" data-model="date"><strong>dim_date</strong><span><i class="key-pk">PK</i> service_date</span><small>day · week · month · weekend</small></button>
+          </div>
+
+          <div class="stage-arrow" aria-hidden="true"><span>dimensions<br>join by key</span><b>→</b></div>
+
+          <div class="clear-stage fact-stage">
+            <div class="stage-heading"><b>2</b><span><strong>Record</strong><small>Two natural-grain facts</small></span></div>
+            <button class="clear-table fact-table pickup-table" data-model="pickup">
+              <div class="grain-badge">GRAIN · ONE STOP ATTEMPT</div><strong>fact_pickup</strong>
+              <span><i class="key-pk">PK</i> pickup_id</span><span><i class="key-fk">FK</i> service_date · route_id · truck_id · customer_id</span>
+              <small><i class="key-measure">Σ</i> tons · is_completed · is_missed</small><em>≈ 1.58M rows</em>
+            </button>
+            <div class="fact-separator"><span>different business processes</span></div>
+            <button class="clear-table fact-table route-day-table" data-model="routeDay">
+              <div class="grain-badge">GRAIN · ONE ROUTE + TRUCK + DATE</div><strong>fact_route_day</strong>
+              <span><i class="key-pk">UK</i> service_date + route_id + truck_id</span>
+              <small><i class="key-measure">Σ</i> shift_hours · km · labour · fuel · maintenance · total_cost</small><em>2,550 rows</em>
+            </button>
+          </div>
+
+          <div class="stage-arrow safe-arrow" aria-hidden="true"><span>roll up pickups<br>then join 1:1</span><b>→</b></div>
+
+          <div class="clear-stage mart-stage">
+            <div class="stage-heading"><b>3</b><span><strong>Combine & serve</strong><small>Safe analytical marts</small></span></div>
+            <div class="rollup-box"><span>FIRST</span><strong>Pickup rollup</strong><code>GROUP BY service_date,<br>route_id, truck_id</code><small>completed_stops · missed_stops · tons</small></div>
+            <div class="join-box"><span>THEN INNER JOIN ON</span><code>service_date + route_id + truck_id</code></div>
+            <button class="clear-table mart-table" data-model="routeMart"><div class="grain-badge">GRAIN · ROUTE + TRUCK + DATE</div><strong>mart_route_day</strong><small><i class="key-measure">Σ</i> pickup counts + tons + hours + km + costs</small><em>No ratios stored</em></button>
+            <div class="kpi-branches"><button data-model="routeKpi"><strong>mart_route_kpis</strong><small>route grain</small><span><i class="key-ratio">÷</i> cost/stop · stops/hour · missed rate</span></button><button data-model="fuelKpi"><strong>mart_fuel_kpis</strong><small>fuel-type grain</small><span><i class="key-ratio">÷</i> fuel · maintenance · vehicle cost/km</span></button></div>
+          </div>
+        </div>
+
+        <div class="model-story reveal">
+          <div class="story-example">
+            <p class="detail-label">ONE CONCRETE ROUTE-DAY</p>
+            <h3>R-04 · T-004 · 2026-07-01</h3>
+            <div class="example-flow"><div><strong>620</strong><span>pickup rows</span></div><b>Σ</b><div><strong>1</strong><span>pickup rollup row</span></div><b>+</b><div><strong>1</strong><span>cost fact row</span></div><b>=</b><div><strong>1</strong><span>mart row</span></div></div>
+          </div>
+          <aside class="model-explanation" id="model-explanation" aria-live="polite">
+            <p class="detail-label" id="model-kicker">MODELING PRINCIPLE</p>
+            <h3 id="model-title">Grain before joins.</h3>
+            <p id="model-body">A pickup is one attempted customer stop. A route day is one operating shift. They become compatible only after pickups are grouped to the route-day-truck key.</p>
+            <div class="model-formula"><span>SAFE KPI</span><code>cost_per_stop = Σ total_cost / Σ completed_stops</code></div>
+          </aside>
+        </div>
+
+        <div class="fanout-warning reveal">
+          <div><span>✕ WRONG</span><p>620 pickups × 1 cost row</p><small>The same route-day cost would be repeated 620 times.</small></div>
+          <div><span>✓ CORRECT</span><p>1 pickup rollup + 1 cost row</p><small>The join stays one-to-one at route-day-truck grain.</small></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="quality" class="quality-section">
+      <div class="section-shell">
+        <div class="section-intro light reveal">
+          <p class="section-number">04 / DATA QUALITY</p>
+          <h2>No record disappears silently.</h2>
+          <p>Silver is more than cleaned data. It is a complete accounting system for every row that arrived in Bronze.</p>
+        </div>
+        <div class="equation-card reveal">
+          <div><span>RAW ROWS</span><strong>Bronze</strong></div><b>=</b><div><span>VALID ROWS</span><strong>Silver</strong></div><b>+</b><div><span>FAILED RULES</span><strong>Rejects</strong></div><b>+</b><div><span>REPLAY NOISE</span><strong>Duplicates</strong></div>
+        </div>
+        <div class="quality-layout">
+          <div class="rule-stack reveal">
+            <p class="panel-label">FIRST-FAILURE RULE ORDER</p>
+            <ol>
+              <li><b>01</b><div><strong>bad_status</strong><span>Not completed or missed</span></div></li>
+              <li><b>02</b><div><strong>unknown_truck</strong><span>Missing truck dimension key</span></div></li>
+              <li><b>03</b><div><strong>tons_out_of_range</strong><span>Null, below 0, or above 12</span></div></li>
+              <li><b>04</b><div><strong>outside_shift</strong><span>Before 05:00 or after 20:00</span></div></li>
+              <li><b>05</b><div><strong>nonpositive_measure</strong><span>Hours or kilometres ≤ 0</span></div></li>
+            </ol>
+          </div>
+          <div class="reject-flow reveal delay-1">
+            <p class="panel-label">QUARANTINE, DON'T DELETE</p>
+            <div class="record-card"><span>ORIGINAL BRONZE RECORD</span><code>{ "pickup_id": "P00004219",<br>  "truck_id": "T-999",<br>  "status": "completed" }</code></div>
+            <div class="reject-arrow">↓ <span>first rule hit</span></div>
+            <div class="reject-card"><span>REJECTS TABLE</span><p><b>source</b> pickups</p><p><b>rule</b> unknown_truck</p><p><b>record</b> original JSON</p><p><b>loaded_at</b> timestamp</p></div>
+          </div>
+        </div>
+        <div class="qa-row reveal"><div><strong>25</strong><span>automated tests</span></div><div><strong>40</strong><span>local QA checks</span></div><div><strong>4/4</strong><span>Athena checks</span></div><div><strong>2.97%</strong><span>planted error rate</span></div></div>
+      </div>
+    </section>
+
+    <section id="serving" class="section-shell serving-section">
+      <div class="section-intro reveal">
+        <p class="section-number">05 / SERVING LAYER</p>
+        <h2>Gold data, queried on demand.</h2>
+        <p>Streamlit stays local to control cost. Athena queries compact Gold marts through explicit Glue Catalog schemas; no dashboard request runs ETL.</p>
+      </div>
+      <div class="serving-path reveal">
+        <div class="serve-node"><span>01</span><div class="serve-logo s3-logo">S3</div><h3>Gold Parquet</h3><p>Columnar analytical marts</p><code>gold/mart_route_day/</code></div>
+        <div class="serve-arrow"><i></i><b>→</b><small>catalog schema</small></div>
+        <div class="serve-node"><span>02</span><div class="serve-logo glue-logo">GL</div><h3>Glue Catalog</h3><p>17 explicit table definitions</p><code>route_lab_gold</code></div>
+        <div class="serve-arrow"><i></i><b>→</b><small>serverless SQL</small></div>
+        <div class="serve-node"><span>03</span><div class="serve-logo athena-logo">AQ</div><h3>Athena</h3><p>Filtered compact results</p><code>workgroup: route-lab</code></div>
+        <div class="serve-arrow"><i></i><b>→</b><small>boto3</small></div>
+        <div class="serve-node"><span>04</span><div class="serve-logo streamlit-logo">ST</div><h3>Streamlit</h3><p>Local decision dashboard</p><code>localhost:8503</code></div>
+      </div>
+      <div class="kpi-panel reveal">
+        <div class="kpi-copy"><p class="panel-label">THE DECISION QUESTION</p><h3>Which routes cost the most per stop—and what could we save?</h3><p>All ratios are calculated once using sum-over-sum. Routes are compared only with the median of their own service line.</p></div>
+        <div class="formula-grid">
+          <div><span>COST PER STOP</span><code>Σ total_cost<br>────────────<br>Σ completed_stops</code></div>
+          <div><span>STOPS PER HOUR</span><code>Σ completed_stops<br>─────────────────<br>Σ shift_hours</code></div>
+          <div><span>MISSED RATE</span><code>Σ missed<br>────────────────<br>Σ completed + missed</code></div>
+        </div>
+      </div>
+      <div class="dashboard-preview reveal">
+        <div class="preview-top"><div><span></span><span></span><span></span></div><p>Route Density Lab / Overview</p><b>Synthetic data</b></div>
+        <div class="preview-body">
+          <aside><strong>FILTERS</strong><p>Depot <span>All⌄</span></p><p>Service line <span>All⌄</span></p><p>Fuel type <span>All⌄</span></p><p>Date range <span>Jul — Sep</span></p></aside>
+          <div class="preview-main"><div class="mini-tabs"><b>Overview</b><span>Routes</span><span>Fleet</span><span>Data quality</span></div><div class="mini-metrics"><p><span>Cost per stop</span><strong>$0.95</strong></p><p><span>Stops per hour</span><strong>62.4</strong></p><p><span>Missed rate</span><strong>1.92%</strong></p><p><span>Total pickups</span><strong>1.6M</strong></p></div><div class="mini-chart"><div class="donut"></div><div><b>Pickup attempts</b><p><i class="green"></i> Completed</p><p><i class="red"></i> Missed</p></div></div></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="closing-section">
+      <div class="section-shell closing-inner reveal">
+        <p class="eyebrow">ROUTE DENSITY LAB</p>
+        <h2>Traceable from dashboard<br>back to source.</h2>
+        <p>A small, complete data platform: deterministic generation, immutable ingestion, explicit quality, dimensional modeling, serverless SQL, and a decision-ready interface.</p>
+        <div class="closing-tags"><span>Python</span><span>PySpark</span><span>Parquet</span><span>Terraform</span><span>S3</span><span>Glue</span><span>Athena</span><span>Streamlit</span></div>
+      </div>
+    </section>
+  </main>
+
+  <footer><div class="section-shell"><p>Route Density Lab · AWS Architecture Showcase</p><p>All data and displayed metrics are synthetic.</p></div></footer>
+  <script src="app.js"></script>
+</body>
+</html>
